@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Audio Watermarking (FFT)</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 30px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .box {
+      max-width: 550px;
+      margin: 25px auto;
+      background: #020617;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input[type="file"] {
+      width: 100%;
+      margin: 10px 0;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      background: #2563eb;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .status {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎧 Audio Watermarking (FFT)</h1>
+
+<!-- Encode Section -->
+<div class="box">
+  <h2>🔐 Encode Watermark</h2>
+  <input type="file" id="enc-orig" accept="audio/*">
+  <input type="file" id="enc-wm" accept="audio/*">
+  <button id="enc-btn">Encode & Download</button>
+  <div class="status" id="enc-status"></div>
+</div>
+
+<!-- Decode Section -->
+<div class="box">
+  <h2>🔍 Decode Watermark</h2>
+  <input type="file" id="dec-orig" accept="audio/*">
+  <input type="file" id="dec-wm" accept="audio/*">
+  <button id="dec-btn">Decode & Download</button>
+  <div class="status" id="dec-status"></div>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+// ---------- ENCODE ----------
+document.getElementById("enc-btn").addEventListener("click", async () => {
+  const orig = document.getElementById("enc-orig").files[0];
+  const wm   = document.getElementById("enc-wm").files[0];
+  const status = document.getElementById("enc-status");
+
+  if (!orig || !wm) {
+    status.innerText = "❌ Please select both files";
+    return;
+  }
+
+  status.innerText = "⏳ Encoding...";
+
+  const fd = new FormData();
+  fd.append("original", orig);
+  fd.append("watermark", wm);
+
+  const res = await fetch(`${API}/encode`, {
+    method: "POST",
+    body: fd
+  });
+
+  if (!res.ok) {
+    status.innerText = "❌ Encoding failed";
+    return;
+  }
+
+  const data = await res.json();
+  status.innerText = "⬇ Download starting...";
+
+  // AUTO DOWNLOAD
+  window.location.href = API + data.download_url;
+});
+
+
+// ---------- DECODE ----------
+document.getElementById("dec-btn").addEventListener("click", async () => {
+  const orig = document.getElementById("dec-orig").files[0];
+  const wm   = document.getElementById("dec-wm").files[0];
+  const status = document.getElementById("dec-status");
+
+  if (!orig || !wm) {
+    status.innerText = "❌ Please select both files";
+    return;
+  }
+
+  status.innerText = "⏳ Decoding...";
+
+  const fd = new FormData();
+  fd.append("original", orig);
+  fd.append("watermarked", wm);
+
+  const res = await fetch(`${API}/decode`, {
+    method: "POST",
+    body: fd
+  });
+
+  if (!res.ok) {
+    status.innerText = "❌ Decoding failed";
+    return;
+  }
+
+  const data = await res.json();
+  status.innerText = "⬇ Download starting...";
+
+  // AUTO DOWNLOAD
+  window.location.href = API + data.download_url;
+});
+</script>
+
+</body>
+</html>
