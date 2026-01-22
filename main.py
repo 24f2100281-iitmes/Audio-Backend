@@ -29,6 +29,11 @@ def save_upload(file: UploadFile):
     return path
 
 
+@app.get("/")
+def health():
+    return {"status": "Backend is running"}
+
+
 # ----------- ENCODE -----------
 @app.post("/encode")
 async def encode(
