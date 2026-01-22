@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 import shutil
 import os
+import uvicorn
 
 from processing.encode import encode_audio
 from processing.decode import decode_audio
@@ -77,3 +78,8 @@ def download(filename: str, background_tasks: BackgroundTasks):
         media_type="audio/wav",
         filename=filename
     )
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
